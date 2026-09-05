@@ -2,7 +2,7 @@ import os
 import re
 import pandas as pd
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 
@@ -10,7 +10,17 @@ app = Flask(__name__)
 CORS(app)
 
 
+# ============================================================
+# PATHS
+# ============================================================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# app.py is inside backend/
+# index.html, script.js and style.css are one level above
+FRONTEND_DIR = os.path.abspath(
+    os.path.join(BASE_DIR, "..")
+)
 
 EXCEL_FILE = os.path.join(
     BASE_DIR,
@@ -18,12 +28,20 @@ EXCEL_FILE = os.path.join(
 )
 
 
+# ============================================================
+# DATAFRAMES
+# ============================================================
+
 companies_df = pd.DataFrame()
 websites_df = pd.DataFrame()
 roles_df = pd.DataFrame()
 skills_df = pd.DataFrame()
 company_role_skills_df = pd.DataFrame()
 
+
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
 
 def clean_value(value):
     if pd.isna(value):
@@ -92,6 +110,10 @@ def unique_list(values):
     return result
 
 
+# ============================================================
+# LOAD EXCEL DATABASE
+# ============================================================
+
 def load_database():
     global companies_df
     global websites_df
@@ -109,16 +131,10 @@ def load_database():
 
     if not os.path.exists(EXCEL_FILE):
         print()
-        print("ERROR:")
-        print("Excel file was not found.")
+        print("ERROR: Excel file was not found.")
+        print("Expected location:")
+        print(EXCEL_FILE)
         print()
-        print("Please put this file:")
-        print("SkillSync_Database_with_Company_Official_Websites.xlsx")
-        print()
-        print("inside:")
-        print(BASE_DIR)
-        print()
-
         return False
 
     try:
@@ -135,40 +151,30 @@ def load_database():
                 EXCEL_FILE,
                 sheet_name="500_Companies"
             )
-        else:
-            companies_df = pd.DataFrame()
 
         if "Company_Websites" in excel.sheet_names:
             websites_df = pd.read_excel(
                 EXCEL_FILE,
                 sheet_name="Company_Websites"
             )
-        else:
-            websites_df = pd.DataFrame()
 
         if "25_Roles" in excel.sheet_names:
             roles_df = pd.read_excel(
                 EXCEL_FILE,
                 sheet_name="25_Roles"
             )
-        else:
-            roles_df = pd.DataFrame()
 
         if "Skill_Master" in excel.sheet_names:
             skills_df = pd.read_excel(
                 EXCEL_FILE,
                 sheet_name="Skill_Master"
             )
-        else:
-            skills_df = pd.DataFrame()
 
         if "Company_Role_Skills" in excel.sheet_names:
             company_role_skills_df = pd.read_excel(
                 EXCEL_FILE,
                 sheet_name="Company_Role_Skills"
             )
-        else:
-            company_role_skills_df = pd.DataFrame()
 
         print()
         print("Database loaded successfully.")
@@ -176,7 +182,10 @@ def load_database():
         print("Websites:", len(websites_df))
         print("Roles:", len(roles_df))
         print("Skills:", len(skills_df))
-        print("Company-role-skill records:", len(company_role_skills_df))
+        print(
+            "Company-role-skill records:",
+            len(company_role_skills_df)
+        )
         print("=" * 60)
         print()
 
@@ -191,49 +200,61 @@ def load_database():
         return False
 
 
+# ============================================================
+# COMPANY WEBSITE
+# ============================================================
+
 def get_company_website(company):
     target = normalize_company(company)
 
     if not websites_df.empty:
-        for _, row in websites_df.iterrows():
+        if "company" in websites_df.columns:
 
-            row_company = normalize_company(
-                row.get("company", "")
-            )
+            for _, row in websites_df.iterrows():
 
-            if row_company == target:
-
-                website = clean_value(
-                    row.get(
-                        "company_official_website",
-                        ""
-                    )
+                row_company = normalize_company(
+                    row.get("company", "")
                 )
 
-                if website:
-                    return website
+                if row_company == target:
+
+                    website = clean_value(
+                        row.get(
+                            "company_official_website",
+                            ""
+                        )
+                    )
+
+                    if website:
+                        return website
 
     if not companies_df.empty:
-        for _, row in companies_df.iterrows():
+        if "company" in companies_df.columns:
 
-            row_company = normalize_company(
-                row.get("company", "")
-            )
+            for _, row in companies_df.iterrows():
 
-            if row_company == target:
-
-                website = clean_value(
-                    row.get(
-                        "company_official_website",
-                        ""
-                    )
+                row_company = normalize_company(
+                    row.get("company", "")
                 )
 
-                if website:
-                    return website
+                if row_company == target:
+
+                    website = clean_value(
+                        row.get(
+                            "company_official_website",
+                            ""
+                        )
+                    )
+
+                    if website:
+                        return website
 
     return ""
 
+
+# ============================================================
+# COMPANY LIST
+# ============================================================
 
 def get_company_list():
     result = []
@@ -263,6 +284,10 @@ def get_company_list():
     return unique_list(result)
 
 
+# ============================================================
+# ROLE LIST
+# ============================================================
+
 def get_role_list():
     if roles_df.empty:
         return []
@@ -280,30 +305,40 @@ def get_role_list():
     return unique_list(roles)
 
 
+# ============================================================
+# SKILLS
+# ============================================================
+
 def get_skills_by_type():
     technical = []
     behavioral = []
 
     if skills_df.empty:
         return {
-            "technical": technical,
-            "behavioral": behavioral
+            "technical": [],
+            "behavioral": []
         }
 
     if "canonical_skill" not in skills_df.columns:
         return {
-            "technical": technical,
-            "behavioral": behavioral
+            "technical": [],
+            "behavioral": []
         }
 
     for _, row in skills_df.iterrows():
 
         skill = clean_value(
-            row.get("canonical_skill", "")
+            row.get(
+                "canonical_skill",
+                ""
+            )
         )
 
         skill_type = normalize_text(
-            row.get("skill_type", "")
+            row.get(
+                "skill_type",
+                ""
+            )
         )
 
         if not skill:
@@ -321,7 +356,12 @@ def get_skills_by_type():
     }
 
 
+# ============================================================
+# COMPANY + ROLE DATA
+# ============================================================
+
 def get_company_role_data(company, role):
+
     if company_role_skills_df.empty:
         return pd.DataFrame()
 
@@ -338,20 +378,26 @@ def get_company_role_data(company, role):
     target_company = normalize_company(company)
     target_role = normalize_role(role)
 
-    mask = (
+    company_mask = (
         company_role_skills_df["company"]
         .apply(normalize_company)
         == target_company
     )
 
-    mask &= (
+    role_mask = (
         company_role_skills_df["role"]
         .apply(normalize_role)
         == target_role
     )
 
-    return company_role_skills_df.loc[mask].copy()
+    return company_role_skills_df.loc[
+        company_mask & role_mask
+    ].copy()
 
+
+# ============================================================
+# ANALYZE COMPANY
+# ============================================================
 
 def analyze_company(
     company,
@@ -385,14 +431,20 @@ def analyze_company(
         for _, row in data.iterrows():
 
             skill = clean_value(
-                row.get("skill", "")
+                row.get(
+                    "skill",
+                    ""
+                )
             )
 
             if not skill:
                 continue
 
             skill_type = normalize_text(
-                row.get("skill_type", "")
+                row.get(
+                    "skill_type",
+                    ""
+                )
             )
 
             importance = safe_float(
@@ -409,14 +461,20 @@ def analyze_company(
             )
 
             if "technical" in skill_type:
+
                 required_technical.append(
                     requirement
                 )
 
             elif "behavior" in skill_type:
+
                 required_behavioral.append(
                     requirement
                 )
+
+    # --------------------------------------------------------
+    # TECHNICAL MATCH
+    # --------------------------------------------------------
 
     matched_technical = []
     missing_technical = []
@@ -433,9 +491,11 @@ def analyze_company(
         if normalized in student_technical:
 
             matched_technical.append(skill)
+
             technical_matched_weight += weight
 
         else:
+
             missing_technical.append(skill)
 
     if technical_total_weight > 0:
@@ -446,7 +506,12 @@ def analyze_company(
         ) * 100
 
     else:
+
         technical_match = 0.0
+
+    # --------------------------------------------------------
+    # BEHAVIORAL MATCH
+    # --------------------------------------------------------
 
     matched_behavioral = []
     missing_behavioral = []
@@ -463,9 +528,11 @@ def analyze_company(
         if normalized in student_behavioral:
 
             matched_behavioral.append(skill)
+
             behavioral_matched_weight += weight
 
         else:
+
             missing_behavioral.append(skill)
 
     if behavioral_total_weight > 0:
@@ -476,7 +543,12 @@ def analyze_company(
         ) * 100
 
     else:
+
         behavioral_match = 0.0
+
+    # --------------------------------------------------------
+    # OVERALL MATCH
+    # --------------------------------------------------------
 
     total_weight = (
         technical_total_weight
@@ -496,7 +568,12 @@ def analyze_company(
         ) * 100
 
     else:
+
         overall_match = 0.0
+
+    # --------------------------------------------------------
+    # ROADMAP
+    # --------------------------------------------------------
 
     roadmap = []
 
@@ -518,57 +595,116 @@ def analyze_company(
             "Great job! You currently match all available requirements."
         )
 
+    # --------------------------------------------------------
+    # WEBSITE
+    # --------------------------------------------------------
+
     website = get_company_website(company)
+
+    # --------------------------------------------------------
+    # RESULT
+    # --------------------------------------------------------
 
     return {
         "company": company,
         "role": role,
         "official_website": website,
+
         "technical_match": round(
             technical_match,
             2
         ),
+
         "behavioral_match": round(
             behavioral_match,
             2
         ),
+
         "overall_match": round(
             overall_match,
             2
         ),
+
         "matched_technical": unique_list(
             matched_technical
         ),
+
         "missing_technical": unique_list(
             missing_technical
         ),
+
         "matched_behavioral": unique_list(
             matched_behavioral
         ),
+
         "missing_behavioral": unique_list(
             missing_behavioral
         ),
+
         "matched_count": len(
             matched_technical
             + matched_behavioral
         ),
+
         "missing_count": len(
             missing_technical
             + missing_behavioral
         ),
+
         "roadmap": roadmap,
+
         "data_status": "prototype"
     }
 
 
+# ============================================================
+# FRONTEND
+# ============================================================
+
 @app.route("/", methods=["GET"])
 def home():
 
-    return jsonify({
-        "message": "SkillSync AI backend is running.",
-        "status": "success"
-    })
+    index_file = os.path.join(
+        FRONTEND_DIR,
+        "index.html"
+    )
 
+    if not os.path.exists(index_file):
+
+        return jsonify({
+            "error": "index.html was not found.",
+            "frontend_directory": FRONTEND_DIR
+        }), 404
+
+    return send_from_directory(
+        FRONTEND_DIR,
+        "index.html"
+    )
+
+
+@app.route("/<path:filename>", methods=["GET"])
+def frontend_files(filename):
+
+    requested_file = os.path.join(
+        FRONTEND_DIR,
+        filename
+    )
+
+    if os.path.isfile(requested_file):
+
+        return send_from_directory(
+            FRONTEND_DIR,
+            filename
+        )
+
+    return jsonify({
+        "error": "File not found."
+    }), 404
+
+
+# ============================================================
+# CONFIG API
+# ============================================================
 
 @app.route("/config", methods=["GET"])
 def config():
@@ -576,6 +712,7 @@ def config():
     companies = get_company_list()
     roles = get_role_list()
 
+    # Show only top 15 companies
     top_companies = companies[:15]
 
     return jsonify({
@@ -584,6 +721,10 @@ def config():
     })
 
 
+# ============================================================
+# SKILLS API
+# ============================================================
+
 @app.route("/skills", methods=["GET"])
 def skills():
 
@@ -591,6 +732,10 @@ def skills():
         get_skills_by_type()
     )
 
+
+# ============================================================
+# ANALYZE API
+# ============================================================
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -663,12 +808,14 @@ def analyze():
             technical_skills,
             list
         ):
+
             technical_skills = []
 
         if not isinstance(
             behavioral_skills,
             list
         ):
+
             behavioral_skills = []
 
         results = []
@@ -690,12 +837,21 @@ def analyze():
         )
 
         return jsonify({
+
             "success": True,
+
             "student": student,
+
             "role": role,
+
             "selected_companies": companies,
-            "selected_technical_skills": technical_skills,
-            "selected_behavioral_skills": behavioral_skills,
+
+            "selected_technical_skills":
+                technical_skills,
+
+            "selected_behavioral_skills":
+                behavioral_skills,
+
             "results": results
         })
 
@@ -711,17 +867,33 @@ def analyze():
         }), 500
 
 
-if __name__ == "__main__":
+# ============================================================
+# LOAD DATABASE
+# ============================================================
 
-    load_database()
+load_database()
+
+
+# ============================================================
+# LOCAL DEVELOPMENT
+# ============================================================
+
+if __name__ == "__main__":
 
     print()
     print("=" * 60)
-    print("SkillSync AI Backend")
+    print("SkillSync AI")
     print("=" * 60)
-    print("Server: http://127.0.0.1:5000")
-    print("Config: http://127.0.0.1:5000/config")
-    print("Skills: http://127.0.0.1:5000/skills")
+    print("Frontend:", FRONTEND_DIR)
+    print("Excel:", EXCEL_FILE)
+    print()
+    print("Server:")
+    print("http://127.0.0.1:5000")
+    print()
+    print("API:")
+    print("http://127.0.0.1:5000/config")
+    print("http://127.0.0.1:5000/skills")
+    print("http://127.0.0.1:5000/analyze")
     print("=" * 60)
     print()
 
