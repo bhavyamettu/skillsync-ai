@@ -1,8 +1,0 @@
-Flask
-flask-cors
-pandas
-numpy
-scikit-learn
-joblib
-openpyxl
-gunicorn
