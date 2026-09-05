@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SkillSync AI</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="loginPage" class="login-page">
+
+    <div class="login-card">
+
+        <div class="brand">
+            <div class="brand-logo">S</div>
+            <div>
+                <h1>SkillSync AI</h1>
+                <p>AI Career Skill Intelligence</p>
+            </div>
+        </div>
+
+        <h2>Welcome Back</h2>
+        <p class="login-subtitle">
+            Sign in to discover the skills you need for your dream career.
+        </p>
+
+        <label>Email Address</label>
+        <input
+            type="email"
+            id="email"
+            class="large-input"
+            placeholder="Enter your email address"
+        >
+
+        <label>Password</label>
+        <input
+            type="password"
+            id="password"
+            class="large-input"
+            placeholder="Enter your password"
+        >
+
+        <button class="primary-btn" onclick="login()">
+            Continue
+        </button>
+
+    </div>
+
+</div>
+
+
+<div id="appPage" class="app-page hidden">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-logo">S</div>
+
+            <div>
+                <h2>SkillSync</h2>
+                <span>AI Career Intelligence</span>
+            </div>
+        </div>
+
+        <div class="user-mini">
+            <div class="avatar" id="userAvatar">S</div>
+
+            <div>
+                <strong id="userBadge">Student</strong>
+                <span>Career Explorer</span>
+            </div>
+        </div>
+
+        <nav>
+
+            <button onclick="showSection('profileSection')" class="nav-item active">
+                <span>👤</span>
+                Student Profile
+            </button>
+
+            <button onclick="showSection('careerSection')" class="nav-item">
+                <span>🎯</span>
+                Dream Career
+            </button>
+
+            <button onclick="showSection('skillsSection')" class="nav-item">
+                <span>💡</span>
+                My Skills
+            </button>
+
+            <button onclick="showSection('resultSection')" class="nav-item">
+                <span>📊</span>
+                Analysis
+            </button>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <p class="eyebrow">CAREER INTELLIGENCE</p>
+                <h1 id="pageTitle">Student Profile</h1>
+            </div>
+
+            <div class="top-status">
+                <span class="status-dot"></span>
+                AI System Ready
+            </div>
+
+        </header>
+
+
+        <!-- STUDENT PROFILE -->
+
+        <section id="profileSection" class="content-section">
+
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">STEP 01</p>
+                    <h2>Tell us about yourself</h2>
+                    <p>
+                        Your academic information helps us personalize your career analysis.
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-card">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input
+                            type="text"
+                            id="studentName"
+                            placeholder="Enter your full name"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>College</label>
+                        <input
+                            type="text"
+                            id="college"
+                            placeholder="Enter your college name"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Branch</label>
+
+                        <select id="branch">
+
+                            <option value="">Select your branch</option>
+
+                            <option>CSE</option>
+                            <option>CSM</option>
+                            <option>CSD</option>
+                            <option>CSBS</option>
+                            <option>IT</option>
+                            <option>ECE</option>
+                            <option>EEE</option>
+                            <option>MECH</option>
+                            <option>CIVIL</option>
+                            <option>AI & ML</option>
+                            <option>AI & DS</option>
+                            <option>Data Science</option>
+                            <option>Cyber Security</option>
+                            <option>Information Science</option>
+                            <option>Other</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>CGPA</label>
+
+                        <input
+                            type="number"
+                            id="cgpa"
+                            placeholder="Example: 9.06"
+                            min="0"
+                            max="10"
+                            step="0.01"
+                        >
+
+                    </div>
+
+                </div>
+
+                <button class="next-btn" onclick="goToCareer()">
+                    Continue to Dream Career →
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- DREAM CAREER -->
+
+        <section id="careerSection" class="content-section hidden">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">STEP 02</p>
+
+                    <h2>Choose Your Dream Career</h2>
+
+                    <p>
+                        Select one or more companies you dream of working for.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="career-card">
+
+                <div class="career-title">
+
+                    <div>
+                        <h3>Dream Companies</h3>
+
+                        <p>
+                            Select multiple companies
+                        </p>
+                    </div>
+
+                    <span class="selection-counter">
+                        <span id="companyCount">0</span> selected
+                    </span>
+
+                </div>
+
+
+                <!-- COMPANY LOGO BUTTONS -->
+
+                <div id="companyGrid" class="company-grid"></div>
+
+
+                <!-- SELECTED COMPANIES -->
+
+                <div class="selected-area">
+
+                    <h4>Selected Companies</h4>
+
+                    <div id="selectedCompanies" class="selected-companies">
+                        <span class="empty-selection">
+                            No companies selected yet
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <!-- OTHER COMPANY -->
+
+                <div class="other-company">
+
+                    <label>Can't find your company?</label>
+
+                    <div class="other-company-row">
+
+                        <input
+                            type="text"
+                            id="otherCompany"
+                            placeholder="Enter another company name"
+                        >
+
+                        <button
+                            type="button"
+                            class="add-company-btn"
+                            onclick="addOtherCompany()"
+                        >
+                            + Add
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ROLE -->
+
+                <div class="role-area">
+
+                    <label>Dream Role</label>
+
+                    <p>Select only one role.</p>
+
+                    <select id="role">
+
+                        <option value="">
+                            Select your dream role
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- OTHER ROLE -->
+
+                <div class="other-role">
+
+                    <label>Other Role</label>
+
+                    <input
+                        type="text"
+                        id="otherRole"
+                        placeholder="Enter your role if it is not listed"
+                    >
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button
+                        class="back-btn"
+                        onclick="showSection('profileSection')"
+                    >
+                        ← Back
+                    </button>
+
+                    <button
+                        class="next-btn"
+                        onclick="goToSkills()"
+                    >
+                        Continue to Skills →
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- SKILLS -->
+
+        <section id="skillsSection" class="content-section hidden">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">STEP 03</p>
+
+                    <h2>Build Your Skill Profile</h2>
+
+                    <p>
+                        Select any skills you currently have.
+                        There is no minimum number of skills required.
+                    </p>
+
+                </div>
+
+                <div class="skill-count-box">
+                    <strong id="skillCount">0</strong>
+                    <span>Skills Selected</span>
+                </div>
+
+            </div>
+
+
+            <div class="skills-card">
+
+                <div class="skill-tabs">
+
+                    <button
+                        class="skill-filter active"
+                        onclick="filterSkills('both', this)"
+                    >
+                        All Skills
+                    </button>
+
+                    <button
+                        class="skill-filter"
+                        onclick="filterSkills('technical', this)"
+                    >
+                        Technical
+                    </button>
+
+                    <button
+                        class="skill-filter"
+                        onclick="filterSkills('behavioral', this)"
+                    >
+                        Behavioral
+                    </button>
+
+                </div>
+
+
+                <div class="skill-section">
+
+                    <div class="skill-section-header">
+
+                        <div>
+                            <h3>Technical Skills</h3>
+                            <p>Programming, tools and technical knowledge</p>
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="technicalSkills"
+                        class="skills-container"
+                    ></div>
+
+                    <div class="custom-skill">
+
+                        <input
+                            type="text"
+                            id="otherTechnical"
+                            placeholder="Add another technical skill"
+                        >
+
+                        <button
+                            onclick="addCustomSkill('technical')"
+                        >
+                            + Add
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="skill-section">
+
+                    <div class="skill-section-header">
+
+                        <div>
+                            <h3>Behavioral Skills</h3>
+                            <p>Communication, leadership and workplace skills</p>
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="behavioralSkills"
+                        class="skills-container"
+                    ></div>
+
+                    <div class="custom-skill">
+
+                        <input
+                            type="text"
+                            id="otherBehavioral"
+                            placeholder="Add another behavioral skill"
+                        >
+
+                        <button
+                            onclick="addCustomSkill('behavioral')"
+                        >
+                            + Add
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button
+                        class="back-btn"
+                        onclick="showSection('careerSection')"
+                    >
+                        ← Back
+                    </button>
+
+                    <button
+                        class="analyze-btn"
+                        onclick="analyzeCareer()"
+                    >
+                        ✨ Analyze My Career
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULTS -->
+
+        <section id="resultSection" class="content-section hidden">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">CAREER ANALYSIS</p>
+
+                    <h2>Your SkillSync Results</h2>
+
+                    <p id="resultSubtitle">
+                        Comparing your skills with your selected dream companies.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div id="bestMatch" class="best-match"></div>
+
+
+            <div id="resultsContainer"></div>
+
+
+            <div class="button-row">
+
+                <button
+                    class="back-btn"
+                    onclick="showSection('skillsSection')"
+                >
+                    ← Edit Skills
+                </button>
+
+                <button
+                    class="next-btn"
+                    onclick="showSection('careerSection')"
+                >
+                    Edit Dream Career
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
